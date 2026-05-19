@@ -1,99 +1,137 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
 
-const skillCategories = [
-    {
-        icon: '💻',
-        category: 'Software Development',
-        color: '#2563EB',
-        skills: ['Python', 'Django REST', 'JavaScript', 'React / Next.js', 'REST APIs'],
-    },
-    {
-        icon: '⚡',
-        category: 'Electronics Engineering',
-        color: '#06B6D4',
-        skills: ['Embedded Systems', 'Circuit Design', 'Networking', 'Instrumentation', 'Electronics'],
-    },
-    {
-        icon: '🛠',
-        category: 'Tools',
-        color: '#7C3AED',
-        skills: ['GitHub', 'VS Code', 'Cisco Packet Tracer', 'Linux', 'Postman'],
-    },
-]
+interface SkillCategory {
+  id: number
+  icon: string
+  category: string
+  color: string
+  skills: string[]
+}
 
 const containerVariants = {
-    hidden: {},
-    visible: {
-        transition: { staggerChildren: 0.15 },
-    },
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.15 },
+  },
 }
 
 const cardVariants = {
-    hidden: { opacity: 0, y: 40 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 }
 
 export default function Skills() {
-    return (
-        <section id="skills" className="py-24 px-6 bg-[#0B1120]">
-            <div className="max-w-6xl mx-auto">
+  const [categories, setCategories] = useState<SkillCategory[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5 }}
-                    className="mb-14"
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/skills/`)
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch')
+        return res.json()
+      })
+      .then(data => {
+        setCategories(data)
+        setLoading(false)
+      })
+      .catch(err => {
+        console.error(err)
+        setError('Could not load skills right now. Please try again later.')
+        setLoading(false)
+      })
+  }, [])
+
+  return (
+    <section id="skills" className="py-24 px-6 bg-white dark:bg-[#0B1120]">
+      <div className="max-w-6xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="mb-14"
+        >
+          <p className="text-cyan-600 dark:text-cyan-400 text-sm tracking-widest uppercase mb-2">
+            What I work with
+          </p>
+          <h2 className="text-4xl font-bold text-slate-900 dark:text-white">Skills</h2>
+        </motion.div>
+
+        {/* Loading state */}
+        {loading && (
+          <div className="text-slate-500 dark:text-slate-400 text-center py-12">
+            <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-slate-400 border-t-transparent mr-2" />
+            Loading skills...
+          </div>
+        )}
+
+        {/* Error state */}
+        {error && (
+          <div className="text-center py-12">
+            <p className="text-red-500 dark:text-red-400 text-lg mb-2">⚠️ {error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white underline transition-colors"
+            >
+              Try refreshing the page
+            </button>
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!loading && !error && categories.length === 0 && (
+          <div className="text-slate-500 dark:text-slate-400 text-center py-12">
+            <p className="text-lg mb-2">🛠️ No skills listed yet.</p>
+            <p className="text-sm">Check back soon for updates.</p>
+          </div>
+        )}
+
+        {/* Skills grid */}
+        {!loading && !error && categories.length > 0 && (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-6"
+          >
+            {categories.map(cat => (
+              <motion.div
+                key={cat.id}
+                variants={cardVariants}
+                whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-6
+                  hover:border-blue-500/40 transition-colors cursor-default"
+              >
+                <div className="text-3xl mb-4">{cat.icon}</div>
+
+                <h3
+                  className="text-sm font-semibold tracking-widest uppercase mb-4"
+                  style={{ color: cat.color }}
                 >
-                    <p className="text-cyan-400 text-sm tracking-widest uppercase mb-2">
-                        What I work with
-                    </p>
-                    <h2 className="text-4xl font-bold text-white">Skills</h2>
-                </motion.div>
+                  {cat.category}
+                </h3>
 
-                <motion.div
-                    variants={containerVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, amount: 0.2 }}
-                    className="grid grid-cols-1 md:grid-cols-3 gap-6"
-                >
-                    {skillCategories.map((cat) => (
-                        <motion.div
-                            key={cat.category}
-                            variants={cardVariants}
-                            whileHover={{ y: -6, transition: { duration: 0.2 } }}
-                            className="bg-white/5 border border-white/10 rounded-2xl p-6
-                hover:border-blue-500/40 transition-colors cursor-default"
-                        >
-                            <div className="text-3xl mb-4">{cat.icon}</div>
-
-                            <h3
-                                className="text-sm font-semibold tracking-widest uppercase mb-4"
-                                style={{ color: cat.color }}
-                            >
-                                {cat.category}
-                            </h3>
-
-                            <ul className="space-y-2">
-                                {cat.skills.map((skill) => (
-                                    <li
-                                        key={skill}
-                                        className="text-slate-400 text-sm py-1.5
-                      border-b border-white/5 last:border-0"
-                                    >
-                                        {skill}
-                                    </li>
-                                ))}
-                            </ul>
-
-                        </motion.div>
-                    ))}
-                </motion.div>
-
-            </div>
-        </section>
-    )
+                <ul className="space-y-2">
+                  {cat.skills.map(skill => (
+                    <li
+                      key={skill}
+                      className="text-slate-600 dark:text-slate-400 text-sm py-1.5
+                        border-b border-slate-200 dark:border-white/5 last:border-0"
+                    >
+                      {skill}
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </div>
+    </section>
+  )
 }
