@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useFetch } from '@/hooks/useFetch';
 
 interface ContactItem {
@@ -30,29 +30,40 @@ export default function Contact() {
       });
       setStatus(res.ok ? 'success' : 'error');
       if (res.ok) setForm({ name: '', email: '', subject: '', message: '' });
+      setTimeout(() => setStatus('idle'), 3000);
     } catch {
       setStatus('error');
+      setTimeout(() => setStatus('idle'), 3000);
     }
   };
 
   if (loading) return <div className="py-24 text-center">Loading contact info...</div>;
 
   return (
-    <section id="contact" className="py-24 px-6 bg-white dark:bg-[#0B1120]">
+    <section id="contact" className="py-24 px-6 bg-white dark:bg-[#0B1120] relative">
       <div className="max-w-6xl mx-auto">
         <div className="mb-14">
           <p className="text-cyan-600 dark:text-cyan-400 text-sm tracking-widest uppercase mb-2">Get in touch</p>
           <h2 className="text-4xl font-bold text-slate-900 dark:text-white">Contact</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
             <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-8">
               Open to opportunities, collaborations, and interesting conversations. Reach out and I'll get back to you as soon as possible.
             </p>
             <div className="space-y-4">
               {contactInfo?.map(item => (
-                <div key={item.label} className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 flex items-center justify-center text-lg flex-shrink-0">
+                <motion.div
+                  key={item.label}
+                  className="flex items-center gap-4 group"
+                  whileHover={{ x: 5 }}
+                >
+                  <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 flex items-center justify-center text-lg flex-shrink-0 transition-all group-hover:shadow-[0_0_8px_#3b82f6]">
                     {item.icon}
                   </div>
                   <div>
@@ -65,27 +76,83 @@ export default function Contact() {
                       <p className="text-slate-700 dark:text-slate-300 text-sm">{item.value}</p>
                     )}
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </motion.div>
 
-          {/* contact form – unchanged */}
-          <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-8">
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-8 relative overflow-hidden"
+          >
+            {/* Signal strength animation during sending */}
+            <AnimatePresence>
+              {status === 'sending' && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute top-4 right-4 flex gap-1"
+                >
+                  {[1, 2, 3, 4].map(i => (
+                    <motion.div
+                      key={i}
+                      className="w-1 bg-blue-500 rounded-sm"
+                      style={{ height: `${i * 5}px` }}
+                      animate={{ height: [`${i * 5}px`, `${i * 8}px`, `${i * 5}px`] }}
+                      transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.1 }}
+                    />
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <div className="space-y-4">
               {['name', 'email', 'subject'].map(field => (
                 <div key={field}>
                   <label className="text-slate-500 dark:text-slate-400 text-xs mb-1 block capitalize">{field}</label>
-                  <input type={field === 'email' ? 'email' : 'text'} name={field} value={form[field as keyof typeof form]} onChange={handleChange} placeholder={`Your ${field}`} className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-800 dark:text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 transition-colors" />
+                  <input
+                    type={field === 'email' ? 'email' : 'text'}
+                    name={field}
+                    value={form[field as keyof typeof form]}
+                    onChange={handleChange}
+                    placeholder={`Your ${field}`}
+                    className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-800 dark:text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 transition-colors"
+                  />
                 </div>
               ))}
               <div>
                 <label className="text-slate-500 dark:text-slate-400 text-xs mb-1 block">Message</label>
-                <textarea name="message" value={form.message} onChange={handleChange} rows={5} placeholder="Tell me about your project or opportunity..." className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-800 dark:text-white text-sm resize-none placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 transition-colors" />
+                <textarea
+                  name="message"
+                  value={form.message}
+                  onChange={handleChange}
+                  rows={5}
+                  placeholder="Tell me about your project or opportunity..."
+                  className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-slate-800 dark:text-white text-sm resize-none placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 transition-colors"
+                />
               </div>
-              <button onClick={handleSubmit} disabled={status === 'sending'} className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-medium py-3 rounded-xl transition-colors">
-                {status === 'sending' ? 'Sending...' : status === 'success' ? 'Message sent ✓' : status === 'error' ? 'Failed — try again' : 'Send Message'}
-              </button>
+              <motion.button
+                onClick={handleSubmit}
+                disabled={status === 'sending'}
+                className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-medium py-3 rounded-xl transition-all relative overflow-hidden group"
+                whileTap={{ scale: 0.98 }}
+              >
+                <span className="relative z-10">
+                  {status === 'sending' ? 'Transmitting...' : status === 'success' ? '✓ Message sent' : status === 'error' ? '⚠️ Failed — try again' : 'Send Message'}
+                </span>
+                {status !== 'sending' && status !== 'success' && (
+                  <motion.span
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
+                    initial={{ x: '-100%' }}
+                    whileHover={{ x: '200%' }}
+                    transition={{ duration: 0.6 }}
+                  />
+                )}
+              </motion.button>
             </div>
           </motion.div>
         </div>

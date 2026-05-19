@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useFetch } from '@/hooks/useFetch';
+import { useTheme } from 'next-themes';
 
 interface HeroData {
   greeting: string;
@@ -19,14 +20,20 @@ interface HeroData {
 
 export default function Hero() {
   const { data, loading, error } = useFetch<HeroData>('/api/content/hero/');
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
   const [roleIndex, setRoleIndex] = useState(0);
   const [displayed, setDisplayed] = useState('');
   const [typing, setTyping] = useState(true);
-
-  // Safe access – ensure typed_roles exists
+  const [glitch, setGlitch] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  
   const roles = data?.typed_roles?.map(r => r.role) || [];
 
-  // Typing animation effect – only if roles exist
+  // Avoid hydration mismatch
+  useEffect(() => setMounted(true), []);
+
+  // Typing animation
   useEffect(() => {
     if (roles.length === 0) return;
     const current = roles[roleIndex];
@@ -49,8 +56,29 @@ export default function Hero() {
     }
   }, [displayed, typing, roleIndex, roles]);
 
-  // Loading state
-  if (loading) {
+  // Random glitch
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setGlitch(true);
+      setTimeout(() => setGlitch(false), 150);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Floating particles (electrons)
+  const particleCount = 20;
+  const [particles, setParticles] = useState<Array<{ x: number; y: number; size: number; duration: number }>>([]);
+  useEffect(() => {
+    const newParticles = Array.from({ length: particleCount }, () => ({
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: 2 + Math.random() * 4,
+      duration: 3 + Math.random() * 5,
+    }));
+    setParticles(newParticles);
+  }, []);
+
+  if (loading || !mounted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#0B1120]">
         <div className="text-slate-500 dark:text-slate-400">Loading hero...</div>
@@ -58,7 +86,6 @@ export default function Hero() {
     );
   }
 
-  // Error state
   if (error || !data) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#0B1120]">
@@ -76,12 +103,40 @@ export default function Hero() {
   }
 
   return (
-    <section className="min-h-screen flex items-center bg-white dark:bg-[#0B1120] px-6">
-      <div className="max-w-6xl mx-auto w-full pt-24">
+    <section className="min-h-screen flex items-center bg-transparent px-6 relative overflow-hidden">
+      {/* Floating particles */}
+      <div className="absolute inset-0 pointer-events-none">
+        {particles.map((p, i) => (
+          <motion.div
+            key={i}
+            className="absolute rounded-full"
+            style={{
+              width: p.size,
+              height: p.size,
+              left: `${p.x}%`,
+              top: `${p.y}%`,
+              backgroundColor: isDark ? 'rgba(0, 200, 255, 0.4)' : 'rgba(0, 100, 200, 0.3)',
+              boxShadow: isDark ? '0 0 4px cyan' : '0 0 2px #0066cc',
+            }}
+            animate={{
+              y: [0, -30, 0],
+              x: [0, 20, -10, 0],
+              opacity: [0.2, 0.8, 0.2],
+            }}
+            transition={{
+              duration: p.duration,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="max-w-6xl mx-auto w-full pt-24 relative z-10">
         <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+          initial={{ opacity: 0, y: 30, filter: "blur(5px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          transition={{ duration: 0.6, delay: 0.1 }}
           className="text-cyan-600 dark:text-cyan-400 text-sm tracking-widest uppercase mb-4"
         >
           {data.greeting}
@@ -94,16 +149,39 @@ export default function Hero() {
           className="text-5xl md:text-7xl font-bold text-slate-900 dark:text-white mb-4 leading-tight"
         >
           {data.name_line1}<br />
-          <span className="text-blue-600 dark:text-blue-500">{data.name_line2}</span>
+          <span className="text-blue-600 dark:text-blue-500 relative inline-block">
+            {data.name_line2}
+            <motion.span
+              className="absolute inset-0 bg-blue-500/20 dark:bg-blue-400/20"
+              animate={{ opacity: [0, 0.5, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+          </span>
         </motion.h1>
 
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="text-xl md:text-2xl text-cyan-700 dark:text-cyan-300 font-medium mb-6 h-8"
+          className="text-xl md:text-2xl text-cyan-700 dark:text-cyan-300 font-medium mb-6 h-10 flex items-center"
         >
-          {displayed}<span className="animate-pulse">|</span>
+          <span 
+            className={glitch ? "animate-pulse" : ""} 
+            style={{ 
+              textShadow: glitch 
+                ? isDark ? "2px 0 red, -2px 0 blue" : "1px 0 red, -1px 0 blue"
+                : "none" 
+            }}
+          >
+            {displayed}
+          </span>
+          <motion.span
+            animate={{ opacity: [1, 0, 1] }}
+            transition={{ duration: 0.8, repeat: Infinity }}
+            className="ml-1 text-cyan-400"
+          >
+            _
+          </motion.span>
         </motion.div>
 
         <motion.p
@@ -123,9 +201,15 @@ export default function Hero() {
         >
           <Link
             href={data.primary_cta_link}
-            className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-full transition-colors font-medium"
+            className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-full transition-all duration-300 font-medium relative overflow-hidden group"
           >
-            {data.primary_cta}
+            <span className="relative z-10">{data.primary_cta}</span>
+            <motion.span
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
+              initial={{ x: '-100%' }}
+              whileHover={{ x: '200%' }}
+              transition={{ duration: 0.6 }}
+            />
           </Link>
           <Link
             href={data.secondary_cta_link}
@@ -134,6 +218,9 @@ export default function Hero() {
             {data.secondary_cta}
           </Link>
         </motion.div>
+
+        {/* Scanline overlay */}
+        <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-30 animate-pulse" />
       </div>
     </section>
   );

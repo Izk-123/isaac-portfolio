@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Sora } from 'next/font/google'
 import ThemeProvider from '@/components/ThemeProvider'
 import Navbar from '@/components/Navbar'
+import AnimatedBackground from '@/components/AnimatedBackground'
 import './globals.css'
 
 const sora = Sora({
@@ -63,8 +64,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="bg-white dark:bg-[#0B1120] transition-colors duration-300">
+      <body className="bg-white dark:bg-[#0B1120] transition-colors duration-300 relative">
         <ThemeProvider>
+          <AnimatedBackground />
           <Navbar />
           {children}
         </ThemeProvider>
