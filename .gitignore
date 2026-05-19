@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+RESEND_API_KEY=re_MNCwdYvT_5Z3mnsgHypnZGiN7CqqAfpMj
+
+git remote add origin https://github.com/Izk-123/isaac-portfolio.git

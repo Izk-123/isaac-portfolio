@@ -14,9 +14,9 @@ export default function Footer() {
 
         <div className="flex gap-4">
           {[
-            { label: 'GitHub',   href: 'https://github.com/yourusername'  },
+            { label: 'GitHub',   href: 'https://github.com/Izk-123'  },
             { label: 'LinkedIn', href: 'https://linkedin.com/in/isaac-ndoka' },
-            { label: 'Email',    href: 'mailto:isaac@example.com'          },
+            { label: 'Email',    href: 'mailto:isaacndoka7@gmail.com'          },
           ].map(link => (
             <a
               key={link.label}
