@@ -1,5 +1,5 @@
 'use client';
-import { motion } from 'framer-motion';
+import { motion, easeOut } from 'framer-motion';
 import Link from 'next/link';
 import { useFetch } from '@/hooks/useFetch';
 
@@ -16,7 +16,12 @@ interface AboutData {
 
 const sectionVariants = {
   hidden: { opacity: 0, scale: 0.92, filter: 'blur(4px)' },
-  visible: { opacity: 1, scale: 1, filter: 'blur(0px)', transition: { duration: 0.6, ease: 'easeOut' } },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    filter: 'blur(0px)',
+    transition: { duration: 0.6, ease: easeOut },
+  },
 };
 
 export default function About() {
@@ -46,10 +51,9 @@ export default function About() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: false, amount: 0.2 }}
-          transition={{ duration: 0.6 }}
           className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center"
         >
-          {/* Left side – profile emoji (unchanged) */}
+          {/* Left side - profile emoji */}
           <div className="relative">
             <div className="relative w-full aspect-square max-w-sm mx-auto">
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-600/20 to-cyan-400/10 border border-blue-500/20" />
@@ -66,7 +70,7 @@ export default function About() {
             </div>
           </div>
 
-          {/* Right side – content (unchanged) */}
+          {/* Right side - content */}
           <div>
             <p className="text-cyan-600 dark:text-cyan-400 text-sm tracking-widest uppercase mb-3">
               {data.tagline}

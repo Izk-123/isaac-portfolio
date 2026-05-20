@@ -83,20 +83,20 @@ export default function Experience() {
             initial={{ scaleY: 0 }}
             whileInView={{ scaleY: 1 }}
             viewport={{ once: false }}
-            transition={{ duration: 1, delay: 0.2, ease: 'anticipate' }}
+            transition={{ duration: 1, delay: 0.2, ease: 'anticipate' as const }}
           >
             <div className="absolute inset-0 bg-blue-300 dark:bg-blue-500/20" />
             <motion.div
               className="absolute top-0 left-0 w-full h-2"
               style={{ backgroundColor: isDark ? '#3b82f6' : '#2563eb' }}
               animate={{ y: ['0%', '100%', '0%'] }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'linear' as const }}
             />
             <motion.div
               className="absolute top-1/3 left-0 w-full h-1"
               style={{ backgroundColor: isDark ? '#06b6d4' : '#0891b2' }}
               animate={{ y: ['0%', '100%', '0%'] }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: 'linear', delay: 0.5 }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' as const, delay: 0.5 }}
             />
           </motion.div>
 

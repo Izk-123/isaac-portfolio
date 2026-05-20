@@ -1,5 +1,5 @@
 'use client';
-import { motion } from 'framer-motion';
+import { motion, easeInOut } from 'framer-motion';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useFetch } from '@/hooks/useFetch';
@@ -118,7 +118,7 @@ export default function Hero() {
                 boxShadow: isDark ? '0 0 3px cyan' : 'none',
               }}
               animate={{ y: [0, -20, 0], x: [0, 10, -5, 0], opacity: [0.1, 0.4, 0.1] }}
-              transition={{ duration: p.duration, repeat: Infinity, ease: 'easeInOut' }}
+              transition={{ duration: p.duration, repeat: Infinity, ease: 'linear' as const }}
             />
           ))}
         </div>
@@ -128,7 +128,7 @@ export default function Hero() {
         <motion.p
           initial={{ opacity: 0, y: 30, filter: 'blur(5px)' }}
           animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          transition={{ duration: 0.6, delay: 0.1 }}
+          transition={{ duration: 0.6, delay: 0.1, ease: easeInOut }}
           className="text-cyan-600 dark:text-cyan-400 text-sm tracking-widest uppercase mb-4"
         >
           {data.greeting}
@@ -137,7 +137,7 @@ export default function Hero() {
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          transition={{ duration: 0.5, delay: 0.2, ease: easeInOut }}
           className="text-5xl md:text-7xl font-bold text-slate-900 dark:text-white mb-4 leading-tight"
         >
           {data.name_line1}<br />
@@ -154,7 +154,7 @@ export default function Hero() {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+          transition={{ duration: 0.5, delay: 0.3, ease: easeInOut }}
           className="text-xl md:text-2xl text-cyan-800 dark:text-cyan-300 font-medium mb-6 h-10 flex items-center"
         >
           <span className={glitch ? 'animate-pulse' : ''} style={{ textShadow: glitch ? (isDark ? '2px 0 red, -2px 0 blue' : '1px 0 red, -1px 0 blue') : 'none' }}>
@@ -166,7 +166,7 @@ export default function Hero() {
         <motion.p
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          transition={{ duration: 0.5, delay: 0.4, ease: easeInOut }}
           className="text-slate-800 dark:text-slate-300 text-lg max-w-xl mb-10 leading-relaxed"
         >
           {data.description}
@@ -175,7 +175,7 @@ export default function Hero() {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
+          transition={{ duration: 0.5, delay: 0.5, ease: easeInOut }}
           className="flex gap-4 flex-wrap"
         >
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
