@@ -6,6 +6,10 @@
   100% { transform: translateY(100%); }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 .scan-line {
   position: fixed;
   top: 0;

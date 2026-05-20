@@ -13,13 +13,13 @@ interface SkillCategory {
 }
 
 const containerVariants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.15 } },
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
 }
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  hidden: { opacity: 0, y: 40, scale: 0.9 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5 } },
 }
 
 export default function Skills() {
@@ -58,13 +58,11 @@ export default function Skills() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: false, amount: 0.2 }}
           transition={{ duration: 0.5 }}
           className="mb-14"
         >
-          <p className="text-cyan-600 dark:text-cyan-400 text-sm tracking-widest uppercase mb-2">
-            What I work with
-          </p>
+          <p className="text-cyan-600 dark:text-cyan-400 text-sm tracking-widest uppercase mb-2">What I work with</p>
           <h2 className="text-4xl font-bold text-slate-900 dark:text-white">Skills</h2>
         </motion.div>
 
@@ -78,12 +76,7 @@ export default function Skills() {
         {error && (
           <div className="text-center py-12">
             <p className="text-red-500 dark:text-red-400 text-lg mb-2">⚠️ {error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white underline transition-colors"
-            >
-              Try refreshing the page
-            </button>
+            <button onClick={() => window.location.reload()} className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white underline">Try refreshing the page</button>
           </div>
         )}
 
@@ -99,7 +92,7 @@ export default function Skills() {
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+            viewport={{ once: false, amount: 0.2 }}
             className="grid grid-cols-1 md:grid-cols-3 gap-6"
           >
             {categories.map(cat => (
@@ -107,11 +100,11 @@ export default function Skills() {
                 key={cat.id}
                 variants={cardVariants}
                 whileHover={{ y: -6 }}
+                whileTap={{ scale: 0.98 }}
                 onHoverStart={() => setHoveredId(cat.id)}
                 onHoverEnd={() => setHoveredId(null)}
                 className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-6 transition-all duration-300 cursor-default relative overflow-hidden"
               >
-                {/* Oscilloscope wave on hover */}
                 {hoveredId === cat.id && (
                   <motion.div
                     className="absolute bottom-0 left-0 w-full h-12"
@@ -166,5 +159,5 @@ export default function Skills() {
         )}
       </div>
     </section>
-  )
+  );
 }

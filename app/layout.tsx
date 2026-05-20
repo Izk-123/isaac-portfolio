@@ -3,6 +3,8 @@ import { Sora } from 'next/font/google'
 import ThemeProvider from '@/components/ThemeProvider'
 import Navbar from '@/components/Navbar'
 import AnimatedBackground from '@/components/AnimatedBackground'
+import ScrollProgress from '@/components/ScrollProgress'
+import SectionSpy from '@/components/SectionSpy'
 import './globals.css'
 
 const sora = Sora({
@@ -68,6 +70,8 @@ export default function RootLayout({
         <ThemeProvider>
           <AnimatedBackground />
           <Navbar />
+          <ScrollProgress />
+          <SectionSpy />
           {children}
         </ThemeProvider>
       </body>

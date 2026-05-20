@@ -17,6 +17,16 @@ interface ExperienceItem {
   tags: { tag: string }[];
 }
 
+const sectionVariants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: { opacity: 1, x: 0, transition: { staggerChildren: 0.1 } },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, x: -30 },
+  visible: { opacity: 1, x: 0 },
+};
+
 export default function Experience() {
   const { data: experiences, loading, error } = useFetch<ExperienceItem[]>('/api/content/experiences/');
   const [activeId, setActiveId] = useState<number | null>(null);
@@ -60,9 +70,21 @@ export default function Experience() {
           <h2 className="text-4xl font-bold text-slate-900 dark:text-white">Experience</h2>
         </div>
 
-        <div className="relative pl-8">
+        <motion.div
+          variants={sectionVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: false, amount: 0.2 }}
+          className="relative pl-8"
+        >
           {/* Animated timeline bus line */}
-          <div className="absolute left-[7px] top-2 bottom-2 w-px overflow-hidden">
+          <motion.div
+            className="absolute left-[7px] top-2 bottom-2 w-px overflow-hidden"
+            initial={{ scaleY: 0 }}
+            whileInView={{ scaleY: 1 }}
+            viewport={{ once: false }}
+            transition={{ duration: 1, delay: 0.2, ease: 'anticipate' }}
+          >
             <div className="absolute inset-0 bg-blue-300 dark:bg-blue-500/20" />
             <motion.div
               className="absolute top-0 left-0 w-full h-2"
@@ -76,20 +98,18 @@ export default function Experience() {
               animate={{ y: ['0%', '100%', '0%'] }}
               transition={{ duration: 2.5, repeat: Infinity, ease: 'linear', delay: 0.5 }}
             />
-          </div>
+          </motion.div>
 
           {experiences.map((item, i) => (
             <motion.div
               key={item.id}
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
+              variants={itemVariants}
+              viewport={{ once: false, amount: 0.3 }}
               className="relative mb-8 last:mb-0"
               onHoverStart={() => setActiveId(item.id)}
               onHoverEnd={() => setActiveId(null)}
             >
-              {/* Timeline node with pulse */}
+              {/* Timeline node */}
               <div
                 className="absolute -left-8 top-4 w-4 h-4 rounded-full border-2 bg-white dark:bg-[#0D1526] flex items-center justify-center"
                 style={{ borderColor: item.color }}
@@ -102,12 +122,11 @@ export default function Experience() {
                 />
                 <span className="text-[8px]">{item.icon}</span>
               </div>
-              
+
               <motion.div
                 className="bg-slate-100 dark:bg-white/5 rounded-2xl p-6 border border-slate-200 dark:border-white/10 transition-all duration-300 relative overflow-hidden"
                 animate={activeId === item.id ? { borderColor: item.color, boxShadow: `0 0 15px ${item.color}40` } : {}}
               >
-                {/* Data stream effect on hover */}
                 {activeId === item.id && (
                   <motion.div
                     className="absolute inset-0 pointer-events-none"
@@ -161,7 +180,7 @@ export default function Experience() {
               </motion.div>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

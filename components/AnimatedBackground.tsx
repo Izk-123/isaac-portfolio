@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTheme } from 'next-themes';
 
 interface Node {
@@ -14,10 +14,17 @@ interface Node {
 
 export default function AnimatedBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const nodesRef = useRef<Node[]>([]);
   const animationRef = useRef<number | null>(null);
-  const { theme, resolvedTheme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -29,8 +36,10 @@ export default function AnimatedBackground() {
     let height = window.innerHeight;
     let nodes: Node[] = [];
 
-    const NUM_NODES = 45;
-    const CONNECT_DIST = 150;
+    const NUM_NODES = isMobile ? 15 : 45;
+    const CONNECT_DIST = isMobile ? 100 : 150;
+    const MOBILE_SPEED_FACTOR = isMobile ? 0.1 : 0.4;
+    const MOBILE_OPACITY = isMobile ? 0.08 : (isDark ? 0.35 : 0.1); // reduced light mode opacity
 
     const initNodes = () => {
       const newNodes: Node[] = [];
@@ -38,9 +47,9 @@ export default function AnimatedBackground() {
         newNodes.push({
           x: Math.random() * width,
           y: Math.random() * height,
-          vx: (Math.random() - 0.5) * 0.4,
-          vy: (Math.random() - 0.5) * 0.4,
-          radius: 2 + Math.random() * 3,
+          vx: (Math.random() - 0.5) * MOBILE_SPEED_FACTOR,
+          vy: (Math.random() - 0.5) * MOBILE_SPEED_FACTOR,
+          radius: isMobile ? 1 + Math.random() * 2 : 2 + Math.random() * 3,
           connections: [],
         });
       }
@@ -70,11 +79,12 @@ export default function AnimatedBackground() {
     const draw = () => {
       if (!ctx || !canvas) return;
       
-      // Clear with theme-appropriate background
-      ctx.fillStyle = isDark ? 'rgba(11, 17, 32, 0.15)' : 'rgba(248, 250, 252, 0.15)';
+      // Clear with transparent background in light mode, slight trail in dark mode
+      ctx.fillStyle = isMobile 
+        ? 'rgba(255, 255, 255, 0)' 
+        : isDark ? 'rgba(11, 17, 32, 0.15)' : 'rgba(255, 255, 255, 0)';
       ctx.fillRect(0, 0, width, height);
       
-      // Update positions
       for (let node of nodes) {
         node.x += node.vx;
         node.y += node.vy;
@@ -84,7 +94,6 @@ export default function AnimatedBackground() {
         if (node.y > height) node.y = 0;
       }
       
-      // Draw connections – color based on theme
       for (let i = 0; i < nodes.length; i++) {
         const node = nodes[i];
         for (let connIdx of node.connections) {
@@ -93,55 +102,61 @@ export default function AnimatedBackground() {
           const dy = node.y - other.y;
           const dist = Math.hypot(dx, dy);
           if (dist < CONNECT_DIST) {
-            const opacity = (1 - dist / CONNECT_DIST) * (isDark ? 0.35 : 0.15);
+            const opacity = (1 - dist / CONNECT_DIST) * MOBILE_OPACITY;
             ctx.beginPath();
             ctx.moveTo(node.x, node.y);
             ctx.lineTo(other.x, other.y);
             ctx.strokeStyle = isDark ? `rgba(0, 150, 255, ${opacity})` : `rgba(0, 100, 200, ${opacity})`;
-            ctx.lineWidth = 1;
+            ctx.lineWidth = isMobile ? 0.5 : 1;
             ctx.stroke();
           }
         }
       }
       
-      // Draw nodes
       for (let node of nodes) {
         ctx.beginPath();
         ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-        ctx.fillStyle = isDark ? 'rgba(0, 180, 255, 0.8)' : 'rgba(0, 100, 200, 0.6)';
+        ctx.fillStyle = isDark 
+          ? `rgba(0, 180, 255, ${isMobile ? 0.5 : 0.8})` 
+          : `rgba(0, 100, 200, ${isMobile ? 0.3 : 0.4})`;
         ctx.fill();
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = isDark ? '#00aaff' : '#0055aa';
-        ctx.fill();
-        ctx.shadowBlur = 0;
+        if (!isMobile && isDark) {
+          ctx.shadowBlur = 8;
+          ctx.shadowColor = '#00aaff';
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
         
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, node.radius * 0.5, 0, Math.PI * 2);
-        ctx.fillStyle = isDark ? '#ffffff' : '#333333';
-        ctx.fill();
+        if (!isMobile && isDark) {
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, node.radius * 0.5, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fill();
+        }
       }
       
-      // Pulse wave
-      time += 0.02;
-      const pulsePos = (time % 1) * CONNECT_DIST;
-      for (let i = 0; i < nodes.length; i++) {
-        const node = nodes[i];
-        for (let connIdx of node.connections) {
-          const other = nodes[connIdx];
-          const dx = other.x - node.x;
-          const dy = other.y - node.y;
-          const dist = Math.hypot(dx, dy);
-          if (dist < CONNECT_DIST) {
-            const t = pulsePos / dist;
-            if (t < 1) {
-              const px = node.x + dx * t;
-              const py = node.y + dy * t;
-              ctx.beginPath();
-              ctx.arc(px, py, 2.5, 0, Math.PI * 2);
-              ctx.fillStyle = isDark ? '#00ffff' : '#0066cc';
-              ctx.shadowBlur = 10;
-              ctx.fill();
-              ctx.shadowBlur = 0;
+      if (!isMobile && isDark) {
+        time += 0.02;
+        const pulsePos = (time % 1) * CONNECT_DIST;
+        for (let i = 0; i < nodes.length; i++) {
+          const node = nodes[i];
+          for (let connIdx of node.connections) {
+            const other = nodes[connIdx];
+            const dx = other.x - node.x;
+            const dy = other.y - node.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < CONNECT_DIST) {
+              const t = pulsePos / dist;
+              if (t < 1) {
+                const px = node.x + dx * t;
+                const py = node.y + dy * t;
+                ctx.beginPath();
+                ctx.arc(px, py, 2, 0, Math.PI * 2);
+                ctx.fillStyle = '#00ffff';
+                ctx.shadowBlur = 6;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+              }
             }
           }
         }
@@ -158,13 +173,16 @@ export default function AnimatedBackground() {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
       window.removeEventListener('resize', resize);
     };
-  }, [isDark]); // re-run when theme changes
+  }, [isDark, isMobile]);
   
   return (
     <canvas
       ref={canvasRef}
-      className="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none"
-      style={{ background: isDark ? '#0B1120' : '#F8FAFC' }}
+      className="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none transition-opacity duration-500"
+      style={{ 
+        background: isDark ? '#0B1120' : '#FFFFFF',
+        opacity: isMobile ? 0.4 : 1,
+      }}
     />
   );
 }

@@ -1,4 +1,5 @@
 'use client';
+import { motion } from 'framer-motion';
 import { useFetch } from '@/hooks/useFetch';
 
 interface FooterData {
@@ -37,15 +38,21 @@ export default function Footer() {
         </p>
         <div className="flex gap-4">
           {data.links.map(link => (
-            <a
+            <motion.div
               key={link.label}
-              href={link.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-slate-500 dark:text-slate-500 hover:text-slate-800 dark:hover:text-white text-sm transition-colors"
+              whileHover={{ scale: 1.1, y: -2 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: 'spring', stiffness: 400 }}
             >
-              {link.label}
-            </a>
+              <a
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-500 dark:text-slate-500 hover:text-slate-800 dark:hover:text-white text-sm transition-colors inline-block"
+              >
+                {link.label}
+              </a>
+            </motion.div>
           ))}
         </div>
       </div>
